@@ -41,7 +41,7 @@ drec is written in Python 3 and Cython. Except Python standard library the follo
 * [PyYAML](https://pypi.org/project/PyYAML/)
 * [Cerberus](https://pypi.org/project/Cerberus/)
 
-Centralised disturbance record collection and archiving system can be created when drec is combined with Supervisord.
+Centralized disturbance record collection and archiving system can be created when drec is combined with Supervisord.
 
 
 ### IEC 61850
