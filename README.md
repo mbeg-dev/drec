@@ -635,6 +635,11 @@ drec can run as deamon in infinite loop. Daemon is stopped gracefully with TERM 
 `./client -l -v INFO -s 1 -S 60 path_to_config_file.yaml`
 
 
+> **Note**
+>
+> Terination signals **SIGTERM** and **SIGINT** are used to used to gracefully stop the process.
+
+
 ## Supervisord
 
 Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
