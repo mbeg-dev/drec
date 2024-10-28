@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import errno
+import logging
+import argparse
+from threading import Event
+import signal
+
+from drec.client import validate_config_schema
+from drec.client import read_config
+from drec.client import client
+
+
+# Set logger
+logger = logging.getLogger('drec')
+logger.setLevel(logging.DEBUG)
+
+
+# Set threading event for program interrupt
+__interrupt = Event()
+
+
+def __interrupt_quit(signo, frame):
+    """
+    Method for setting interrupt flag.
+    Threading Event object internal flag is set to True.
+    The wait() method blocks when flag is True.
+    
+    Parameters
+    ----------
+    signo : int
+        Signal code
+    frame : frame object
+        Current stack frame
+    """
+    
+    logger.warning('Interrupted by {}, shutting down'.format(signal.Signals(signo).name))
+    
+    __interrupt.set()
+
+
+def sleep_type(value, min = 0, max = 86400):
+    """
+    Check timeout integer range
+    
+    Parameters
+    ----------
+    min : int
+        Minimal allowed integer
+    max : int
+        Maximal allowed integer
+    
+    Returns
+    -------
+    value : int
+        Returns integer if timeout is in set range
+    
+    Raises
+    ------
+    ArgumentTypeError
+    """
+    
+    if min <= int(value) <= max:
+        return int(value)
+    else:
+        raise argparse.ArgumentTypeError('value not in range {}-{}'.format(min, max))
+
+
+
+if __name__ == '__main__':
+    # Set signal interrupts
+    signal.signal(signal.SIGINT, __interrupt_quit)
+    signal.signal(signal.SIGTERM, __interrupt_quit)
+    
+    # Command line interface
+    parser = argparse.ArgumentParser(description='Client for disturbance record download')
+    
+    parser.add_argument('config',
+                        metavar='CONFIG',
+                        nargs='+',
+                        type=str,
+                        help='Client configuraion file(s)')
+    
+    parser.add_argument('-l', '--loop',
+                        action='store_true',
+                        help='Run in infinitte loop')
+    
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-v', '--verbose',
+                       default='DEBUG',
+                       choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                       help='Verbosity level. Default DEBUG')
+    
+    group.add_argument('-q', '--quiet',
+                       action='store_true',
+                       help='Quiet mode')
+    
+    parser.add_argument('-s', '--sleep',
+                        metavar='[0-86400]',
+                        type=sleep_type,
+                        default=0,
+                        help='Delay in seconds (0-86400 s) between reading/processing CONFIG files. Default 0 seconds')
+    
+    parser.add_argument('-S', '--sleep_loop',
+                        metavar='[0-86400]',
+                        type=sleep_type,
+                        default=1,
+                        help='Delay in seconds (0-86400 s) between loops. Default 1 second')
+    
+    parser.add_argument('-c', '--check_config',
+                       action='store_true',
+                       help='Only validate config file(s) (client is not executed)')
+    
+    # Parse command line arguments
+    args = parser.parse_args()
+    
+    # Check command line arguments
+    
+    # Set verbosity level
+    if not args.quiet:
+        # Log to console
+        console_handler = logging.StreamHandler(sys.stdout)
+        
+        # Set logging level from command line argument
+        console_handler.setLevel(getattr(logging, args.verbose))
+        console_format = logging.Formatter('%(asctime)s - %(name)-13s - %(levelname)-8s - %(message)s')
+        console_handler.setFormatter(console_format)
+        logger.addHandler(console_handler)
+    
+    # Check config file(s) path and validate schema
+    # Import predefined schema
+    from config.schema import schema
+    
+    # Check config files
+    for filename in args.config:
+        if args.check_config:
+            logger.debug('Checking: {}'.format(filename))
+        
+        if not os.path.isfile(filename):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
+        
+        if not validate_config_schema(read_config(filename), schema):
+            sys.exit()
+    
+    # Don't execute client if check_config flag is set
+    if args.check_config:
+        logger.info('CONFIG file(s) schema validation operation completed successfully')
+    else:
+        # Start client - log message
+        logger.debug('Starting the client')
+        
+        if args.loop:
+            # Run in infinite loop
+            while True:
+                # Run client
+                client(args.config, args.sleep, __interrupt)
+                
+                # Delay between loops
+                if args.sleep_loop > 0:
+                    logger.debug('Timeout between loops: {} s'.format(args.sleep_loop))
+                __interrupt.wait(args.sleep_loop)
+                
+                # Check interrupt flag and exit if necesary
+                if __interrupt.is_set(): break
+        else:
+            # Run client
+            client(args.config, args.sleep, __interrupt)
+        
+        # Stop client - log message
+        logger.debug('Client stopped')

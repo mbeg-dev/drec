@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import textwrap
+
+from drec.iec61850.libiec61850 import iec61850
+from drec.common import file_attr_format_str_len
+
+
+parser = argparse.ArgumentParser(description='Client for IEC 61850 MMS file transfer',
+                                 formatter_class=argparse.RawTextHelpFormatter,
+                                 epilog=textwrap.dedent('''
+                                     Examples:
+                                     
+                                     List all files on IED
+                                         client-iec61850 HOST or client_iec61850 -c dir HOST
+                                     
+                                     Information about specific directory
+                                         client-iec61850 -c info -s IED_DIR_PATH HOST
+                                     
+                                     Information about specific file
+                                         client-iec61850 -c info -s IED_FILE_PATH HOST
+                                 
+                                     Download file from IED root to current directory
+                                         client-iec61850 -c get -s IED_FILE_NAME HOST
+                                     
+                                     Download file from IED to current directory
+                                         client-iec61850 -c get -s IED_FILE_PATH HOST
+                                     
+                                     Download file from IED to current directory and change file name
+                                         client-iec61850 -c get -s IED_FILE_PATH -d LOCAL_FILE_NAME HOST
+                                     
+                                     Download file from IED to specified current directory and change file name
+                                         client-iec61850 -c get -s IED_FILE_PATH -d LOCAL_FILE_PATH HOST
+                                     
+                                     Upload local file to IED root
+                                         client-iec61850 -c set -s LOCAL_FILE_PATH HOST
+                                     
+                                     Upload local file to IED root and change file name
+                                         client-iec61850 -c set -s LOCAL_FILE_PATH -d IED_FILE_NAME HOST
+                                     
+                                     Upload local file to IED drectory and change file name
+                                         client-iec61850 -c set -s LOCAL_FILE_PATH -d IED_FILE_PATH HOST
+                                     
+                                     Delete file from IED root
+                                         client-iec61850 -c del -s IED_FILE_NAME HOST
+                                     
+                                     Delete file from IED
+                                         client-iec61850 -c del -s IED_FILE_PATH HOST
+                                     '''))
+
+parser.add_argument('host',
+                    type=str,
+                    help='Hostname/IP address')
+
+parser.add_argument('-p', '--port',
+                    type=int,
+                    default=102,
+                    help='Port number. Default 102')
+
+parser.add_argument('-t', '--timeout',
+                    default=5000,
+                    help='Request timeout in miliseconds UINT32. Default 5000 ms.')
+
+parser.add_argument('-c', '--command',
+                    type=str,
+                    default='dir',
+                    choices=['dir', 'info', 'get', 'set', 'del'],
+                    #help='Client commands. Default dir')
+                    help=textwrap.dedent('''\
+                        Client commands. Default dir.
+                          dir  - list file tree
+                          info - information about specific file/directory
+                                   -s SRC  - path to IED file/directory
+                          get  - download file from IED
+                                   -s SRC  - path to IED file
+                                   -d DEST - filename or path to local file (optional)
+                          set  - upload file to IED
+                                   -s SRC  - path local file
+                                   -d DEST - filename or path to IED file (optional)
+                          del  - delete file from IED
+                                   -s SRC  - path to IED file
+                        '''))
+
+parser.add_argument('-s', '--src',
+                    type=str,
+                    default='',
+                    help='Source file/directory in combination with commnads: info, get, set and del')
+
+parser.add_argument('-d', '--dest',
+                    type=str,
+                    default='',
+                    help='Destination file in combination with commnads: get and set')
+
+# Parse command line arguments
+args = parser.parse_args()
+
+# Initialize IEC 61850 client
+client = iec61850.IEC61850_client()
+client.set_request_timeout(args.timeout)
+
+# Connect to IED
+try:
+    client.connect(args.host, args.port)
+except Exception as e:
+    print(e)
+    client.close()
+    client.destroy()
+    sys.exit()
+
+# Execute commands
+try:
+    if args.command in ('dir', 'info'):
+        # Read files from IED
+        if args.command == 'dir':
+            # Read all files from IED
+            dev_file_list = client.get_file_directory('')
+        else:
+            # Read specified files
+            dev_file_list = client.get_file_directory(args.src)
+        
+        # Convert timestamp from ms to s
+        file_list = tuple(((name, size, time/1000) for name, size, time in dev_file_list))
+        
+        # Get string lengths for formated file structure
+        format_str_len = file_attr_format_str_len(file_list)
+        
+        # Print header
+        format_str = '%-{}s%{}s%{}s'.format(*format_str_len)
+        print(format_str % ('NAME', 'SIZE', 'TIME'))
+        print('-' * sum(format_str_len))
+        
+        # Print file attributes
+        format_str = '%-{}s%{}d%{}.3f'.format(*format_str_len)
+        for f in file_list:
+            print(format_str % f)
+    elif args.command == 'get':
+        # Download file from IED
+        client.get_file(args.src, args.dest)
+    elif args.command == 'set':
+        # Upload file to IED
+        client.set_file(args.src, args.dest)
+    elif args.command == 'del':
+        # Delete file on IED
+        client.del_file(args.src)
+    else:
+        print('Invalid command')
+except Exception as e:
+    print(e)
+finally:
+    client.close()
+    client.destroy()
