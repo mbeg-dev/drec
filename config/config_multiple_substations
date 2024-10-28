@@ -1,0 +1,13 @@
+# SS 110/20 kV Substation 1
+/srv/drec/conf/conf_SS_110_20_kV_Substation_1.yaml
+
+# SS 110/20 kV Substation 2
+/srv/drec/conf/conf_SS_110_20_kV_Substation_2.yaml
+
+# SS 110/20 kV Substation 3
+/srv/drec/conf/conf_SS_110_20_kV_Substation_3.yaml
+
+# List of substation config files
+
+# SS 110/20 kV Substation n
+/srv/drec/conf/conf_SS_110_20_kV_Substation_n.yaml

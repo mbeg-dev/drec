@@ -1,0 +1,449 @@
+# CONFIG FILE FORMAT DESCRIPTION
+#
+# Config file consists of two sections GENERAL and DEVICES. File structure is shown bellow.
+#
+# GENERAL:
+#     substation:   required
+#     root_path:    required
+#     dir_path:     required
+#     log_path:     required
+#     protocol:     required/optional
+#     dev_port:     recommended/optional
+#     dev_dir:      optional
+#     user:         recommended/optional
+#     password:     recommended/optional
+#     con_timeout:  optional
+#     req_timeout:  optional
+#     poll_timeout: optional
+#     ret_timeout:  optional
+#     no_retry:     optional
+#     dev_tz:       optional
+#     local_tz:     recommended/optional
+#
+# DEVICES:
+#   - protocol:     required/optional
+#     dev_address:  required
+#     dev_port:     recommended/optional
+#     dev_dir:      optional
+#     user:         recommended/optional
+#     password:     recommended/optional
+#     con_timeout:  optional
+#     req_timeout:  optional
+#     poll_timeout: optional
+#     ret_timeout:  optional
+#     no_retry:     optional
+#     name:         required/optional
+#     bay:          required/optional
+#     location:     required/optional
+#     device:       required/optional
+#     comment:      required/optional
+#     dev_tz:       optional
+#     local_tz:     recommended/optional
+#
+#
+# Parameters used only in GENERAL section are parameters used for the whole substation:
+#  - substation
+#  - root_path
+#  - dir_path
+#  - log_path
+#
+# Parameters used only in DEVICES section are paramters per device:
+#  - dev_address
+#  - name
+#  - bay
+#  - location
+#  - device
+#  - comment
+#
+# Parameters which can be used in GENERAL or DEVICES section are listed bellow:
+#  - protocol
+#  - dev_port
+#  - dev_dir
+#  - user
+#  - password
+#  - con_timeout
+#  - req_timeout
+#  - poll_timeout
+#  - ret_timeout
+#  - no_retry
+#  - dev_tz
+#  - local_tz
+#
+# If parameter is used in GENERAL section than parameter is used for all devices in substation and there is no need to
+# set it per device. But if the same parameter is set in GENERAL and DEVICE section than parameter in DEVICE superseeds
+# parameter in GENERAL section.
+#
+# If parameter is not set in GENERAL or DEVICE section than default hardcoded value will be used. For better control
+# over parameters it's recommended to manually set all parameters in GENERAL section.
+#
+#
+#
+# PARAMETER DESCRIPTION
+#
+# substation:
+#   Type:        string
+#   Description: Substation name can be used in dir_path and log_path
+#   Usage:       Required only in GENERAL section
+#   Protocol:    any (not protocol specific)
+#
+# root_path:
+#   Type:        string
+#   Description: Root path for disturbance record storage can be used in dir_path and log_path parameters
+#   Usage:       Required only in GENERAL section
+#   Protocol:    any (not protocol specific)
+#
+# dir_path:
+#   Type:           string
+#   Description:    User defined directory storage path using tags described bellow
+#   Usage:          Required only in GENERAL section
+#   Protocol:       any (not protocol specific)
+#   Supported tags: <ROOT_PATH>, <SUBSTATION>, <NAME>, <BAY>, <LOCATION>, <DEVICE>, <COMMENT>
+#
+# log_path:
+#   Type:           string
+#   Description:    User defined log storage path using tags described bellow. Log file per substation is used.
+#   Usage:          Required only in GENERAL section
+#   Protocol:       any (not protocol specific)
+#   Supported tags: <ROOT_PATH>, <SUBSTATION>
+#
+# protocol:
+#   Type:                string
+#   Description:         Configured communication protocol in GENERAL section is common for all devices in config file
+#   Usage:               Required in GENERAL or DEVICES section
+#   Protocol:            any (not protocol specific)
+#   Supported protocols: IEC61850, FTP
+#
+# dev_address:
+#   Type:        string
+#   Description: IP address or hostname
+#   Usage:       Required in DEVICES section
+#   Protocol:    IEC61850, FTP
+#
+# dev_port:
+#   Type:        unsigned int
+#   Description: TCP port (0-65535)
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    IEC61850, FTP
+#   Default:     IEC 61850: 102
+#                FTP:        21
+#
+# dev_dir:
+#   Type:        string
+#   Description: Device directory (path) for storing disturbance records
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    IEC61850, FTP
+#   Default:     COMTRADE
+#
+# user:
+#   Type:        string
+#   Description: Username login
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    FTP
+#   Default:     anonymous
+#
+# password:
+#   Type:        string
+#   Description: Password login
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    FTP
+#   Default:     empty password
+#
+# con_timeout:
+#   Type:        unsigned int
+#   Description: Connection timeout in seconds
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    FTP
+#   Default:     60 s
+#
+# req_timeout:
+#   Type:            unsigned int
+#   Description:     Request timeout in seconds. Request timeout may have to be changed for slow connections.
+#   Usage:           Optional in GENERAL or DEVICES section
+#   Protocols:       IEC61850
+#   Parameter range: 0-4294967 (libIEC61850 internally uses request timeout parameter as 32-bit unsigned int in miliseconds)
+#   Default:         5 s
+#
+# poll_timeout:
+#   Type:        unsigned int
+#   Description: Polling timeout between file downloads in seconds. Timeout may have to be changed for slow connections
+#                to release connections resources between polls. Timeout should be shorter than connection timeout.
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    IEC61850, FTP
+#   Default:     0 s
+#
+# ret_timeout:
+#   Type:        unsigned int
+#   Description: Retry timeout in seconds
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    IEC61850, FTP
+#   Default:     10 s
+#
+# no_retry:
+#   Type:        unsigned int
+#   Description: Number of retries on exception ConnectionError
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    IEC61850, FTP
+#   Default:     1
+#
+# name:
+#   Type:        string
+#   Description: Bay name
+#   Usage:       Required in DEVICES section if <NAME> tag is used in dir_path
+#   Protocol:    any (not protocol specific)
+#
+# bay:
+#   Type:        string
+#   Description: Bay code (code =)
+#   Usage:       Required in DEVICES section if <BAY> tag is used in dir_path
+#   Protocol:    any (not protocol specific)
+#
+# location:
+#   Type:        string
+#   Description: Location code (code +)
+#   Usage:       Required in DEVICES section if <LOCATION> tag is used in dir_path
+#   Protocol:    any (not protocol specific)
+#
+# device:
+#   Type:        string
+#   Description: Device code (code -)
+#   Usage:       Required in DEVICES section if <DEVICE> tag is used in dir_path
+#   Protocol:    any (not protocol specific)
+#
+# comment:
+#   Type:        string
+#   Description: Comment
+#   Usage:       Required in DEVICES section if <COMMENT> tag is used in dir_path
+#   Protocol:    any (not protocol specific)
+#
+# dev_tz:
+#   Type:        string
+#   Description: Device timezone
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    FTP
+#   Default:     UTC
+#
+# local_tz:
+#   Type:        string
+#   Description: Local timezone
+#   Usage:       Optional in GENERAL or DEVICES section
+#   Protocol:    IEC61850, FTP
+#   Default:     UTC
+#
+#
+# Note: List of tz database time zones:
+#       https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+#
+# Disturbance records files are saved with original file name but with date and time prefix in
+# format YYYYMMDD_HHMMSS with local timezone.
+#
+# Disturbance records and logs will be saved in the user defined path structure using tags. All characters which are
+# not supported tags are used as regular characters.
+#
+# Supported tags:
+#     <ROOT_PATH>     GENERAL -> root_path
+#     <SUBSTATION>    GENERAL -> substation
+#     <NAME>          DEVICE  -> name
+#     <BAY>           DEVICE  -> bay
+#     <LOCATION>      DEVICE  -> location
+#     <DEVICE>        DEVICE  -> device
+#     <COMMENT>       DEVICE  -> comment
+#
+# Example:
+#     dir_structure:  "<ROOT_PATH>/<SUBSTATION>/<BAY> - <NAME>/<DEVICE>"
+#                       |
+#                       |- YYYYMMDD_HHMMSS_disturbance_record_name.dat
+#                       |- YYYYMMDD_HHMMSS_disturbance_record_name.cfg
+#                       |- YYYYMMDD_HHMMSS_disturbance_record_name.hdr
+#
+#
+# Config file example
+
+GENERAL:
+    substation:     "SS 110/x kV SS_Name"
+    root_path:      "/storage/drec"
+    dir_path:       "<ROOT_PATH>/<SUBSTATION>/<BAY> - <NAME>/<DEVICE>"
+    log_path:       "<ROOT_PATH>/log/<SUBSTATION>.log"
+    protocol:       "IEC61850"
+    dev_port:       102
+    dev_dir:        "COMTRADE"
+    req_timeout:    5
+    poll_timeout:   0
+    ret_timeout:    5
+    no_retry:       1
+    local_tz:       "Europe/Zagreb"
+    
+DEVICE:
+  - dev_address:    "192.168.110.11"
+    name:           "OHL 1"
+    bay:            "E01"
+    location:       "SR1"
+    device:         "F301"
+    comment:        "Main protection"
+    
+  - dev_address:    "192.168.110.12"
+    name:           "OHL 1"
+    bay:            "E01"
+    location:       "SR1"
+    device:         "F302"
+    comment:        "Backup protection"
+    
+  - dev_address:    "192.168.110.21"
+    name:           "Transformer 1"
+    bay:            "E02"
+    location:       "SR1"
+    device:         "F301"
+    comment:        "Main 1 protection"
+    
+  - dev_address:    "192.168.110.22"
+    name:           "Transformer 1"
+    bay:            "E02"
+    location:       "SR1"
+    device:         "F302"
+    comment:        "Main 2 protection"
+    
+  - dev_address:    "192.168.110.31"
+    name:           "Transformer 2"
+    bay:            "E03"
+    location:       "SR1"
+    device:         "F301"
+    comment:        "Main 1 protection"
+    
+  - dev_address:    "192.168.110.32"
+    name:           "Transformer 2"
+    bay:            "E03"
+    location:       "SR1"
+    device:         "F302"
+    comment:        "Main 2 protection"
+    
+  - dev_address:    "192.168.110.41"
+    name:           "OHL 2"
+    bay:            "E04"
+    location:       "SR1"
+    device:         "F301"
+    comment:        "Main protection"
+    
+  - dev_address:    "192.168.110.42"
+    name:           "OHL 2"
+    bay:            "E04"
+    location:       "SR1"
+    device:         "F302"
+    comment:        "Backup protection"
+
+  - dev_address:    "192.168.20.1"
+    name:           "Feeder 1"
+    bay:            "J01"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.2"
+    name:           "Feeder 2"
+    bay:            "J02"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.3"
+    name:           "Feeder 3"
+    bay:            "J03"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.4"
+    name:           "Feeder 4"
+    bay:            "J04"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.5"
+    name:           "Feeder 5"
+    bay:            "J05"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.6"
+    name:           "Transformer 1"
+    bay:            "J06"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.7"
+    name:           "Aux transformer 1"
+    bay:            "J07"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.8"
+    name:           "Metering section 1"
+    bay:            "J08"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.9"
+    name:           "Section coupler"
+    bay:            "J09"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.10"
+    name:           "Metering section 2"
+    bay:            "J10"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.11"
+    name:           "Aux transformer 2"
+    bay:            "J11"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.12"
+    name:           "Transformer 2"
+    bay:            "J12"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.13"
+    name:           "Feeder 6"
+    bay:            "J13"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.14"
+    name:           "Feeder 7"
+    bay:            "J14"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.15"
+    name:           "Feeder 8"
+    bay:            "J15"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.16"
+    name:           "Feeder 9"
+    bay:            "J16"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
+
+  - dev_address:    "192.168.20.17"
+    name:           "Feeder 10"
+    bay:            "J17"
+    location:       "S01"
+    device:         "F301"
+    comment:        "Main protection"
