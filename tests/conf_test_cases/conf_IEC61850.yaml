@@ -1,0 +1,30 @@
+# Substation
+
+GENERAL:
+    substation:     "Substation"
+    root_path:      "/test_path"
+    dir_path:       "<ROOT_PATH>/download/<SUBSTATION>/<BAY>_<NAME>/<COMMENT>"
+    log_path:       "<ROOT_PATH>/log/<SUBSTATION>.log"
+    protocol:       "IEC61850"
+    dev_port:       102
+    dev_dir:        "COMTRADE"
+    req_timeout:    5
+    poll_timeout:   0
+    no_retry:       1
+    ret_timeout:    10
+    local_tz:       "Europe/Zagreb"
+
+DEVICE:
+  - dev_address:    "192.168.0.1"
+    name:           "Feeder_1"
+    bay:            "J01"
+    location:       "S1"
+    device:         "F301"
+    comment:        "Feeder_terminal_1"
+
+  - dev_address:    "192.168.0.2"
+    name:           "Feeder_2"
+    bay:            "J02"
+    location:       "S1"
+    device:         "F301"
+    comment:        "Feeder_terminal_2"
