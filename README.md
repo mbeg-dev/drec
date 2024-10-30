@@ -637,7 +637,7 @@ drec can run as deamon in infinite loop. Daemon is stopped gracefully with TERM 
 
 > **Note**
 >
-> Terination signals **SIGTERM** and **SIGINT** are used to used to gracefully stop the process.
+> Termination signals **SIGTERM** and **SIGINT** are used to used to gracefully stop the process.
 
 
 ## Supervisord
