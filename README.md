@@ -328,7 +328,7 @@ Parameters used only in GENERAL section are parameters used for all devices in t
 * `log_path`
 
 
-Parameters used only in DEVICES section are paramters per device:
+Parameters used only in DEVICES section are parameters per device:
 
 * `dev_address`
 * `name`
