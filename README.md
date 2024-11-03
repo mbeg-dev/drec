@@ -19,8 +19,8 @@ Content:
 * [Using drec](#Using-drec)
   * [drec user and group](#drec-user-and-group)
   * [Command line usage](#Command-line-usage)
-* [Supervisord](#Supervisord)
-  * [Supervisord configuration](#Supervisord-configuration)
+* [Supervisor](#Supervisor)
+  * [Supervisor configuration](#Supervisor-configuration)
   * [drec process configuration](#drec-process-configuration)
     * [Single substation process configuration example with one protocol](#Single-substation-process-configuration-example-with-one-protocol)
     * [Single substation process configuration example with multiple protocols](#Single-substation-process-configuration-example-with-multiple-protocols)
@@ -41,7 +41,7 @@ drec is written in Python 3 and Cython. Except Python standard library the follo
 * [PyYAML](https://pypi.org/project/PyYAML/)
 * [Cerberus](https://pypi.org/project/Cerberus/)
 
-Centralized disturbance record collection and archiving system can be created when drec is combined with Supervisord.
+Centralized disturbance record collection and archiving system can be created when drec is combined with Supervisor.
 
 
 ### IEC 61850
@@ -273,7 +273,7 @@ Configuration file for devices in substation is written in yaml format. Configur
 >
 > Even though it's possible to use single configuration file for devices with different communication protocols it's recommended to use only one communication protocol in the configuration file.
 >
-> When used with Supervisord separate process can be configured for every communication protocol which are executed simultaneously or single process can be configured per substation where configuration files for different protocols are executed consecutively.
+> When used with Supervisor separate process can be configured for every communication protocol which are executed simultaneously or single process can be configured per substation where configuration files for different protocols are executed consecutively.
 
 
 ### Format description
@@ -640,15 +640,15 @@ drec can run as deamon in infinite loop. Daemon is stopped gracefully with TERM 
 > Termination signals **SIGTERM** and **SIGINT** are used to used to gracefully stop the process.
 
 
-## Supervisord
+## Supervisor
 
 Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
 
 More details can be found on the following link:
 
-* [Supervisord](http://supervisord.org/)
+* [Supervisor](http://supervisord.org/)
 
-Services, for example one drec service per substation, are created using supervisord.
+Services, for example one drec service per substation, are created using supervisor.
 
 
 ### drec user and group
@@ -660,7 +660,7 @@ It's recommended to create drec user with nologin shell which is going to be use
 `sudo useradd -m -d /storage/drec/ -g drec -s /usr/sbin/nologin -c "Disturbance record download" drec`
 
 
-### Supervisord configuration
+### Supervisor configuration
 
 Example of supervisord.conf config file
 
@@ -703,12 +703,12 @@ files = /etc/supervisor/conf.d/*.conf
 
 > **Note**
 >
-> The inet HTTP server is not enabled by default. If you choose to enable it, please read security warning from supervisord web site. Never expose the inet HTTP server to the public internet or intranet.
+> The inet HTTP server is not enabled by default. If you choose to enable it, please read security warning from supervisor web site. Never expose the inet HTTP server to the public internet or intranet.
 
 
 ### drec process configuration
 
-Supervisord can be used to configure process for single substation or process for multiple substations.
+Supervisor can be used to configure process for single substation or process for multiple substations.
 
 
 > **Note**
@@ -744,7 +744,7 @@ If substation uses multiple protocols for disturbance record download than confi
 /storage/drec/conf/conf_SS_110_20_kV_Substation_name_FTP.yaml
 ```
 
-Supervisord configuration file `command=` modification for multiple protocols in one process per substation.
+Supervisor configuration file `command=` modification for multiple protocols in one process per substation.
 
 ```
 command=bash -c "/opt/drec/client -l -v INFO -s 1 -S 60 /storage/drec/conf/conf_SS_110_10_kV_Substation_name_*.yaml"
@@ -771,7 +771,7 @@ Process with multiple configuration files can be created using list of configura
 /storage/drec/conf/conf_SS_110_20_kV_Substation_n.yaml
 ```
 
-Supervisord configuration file `command=` modification for multiple substations in one process.
+Supervisor configuration file `command=` modification for multiple substations in one process.
 
 ```
 # read all filenames from file not starting with comment symbol #
@@ -781,9 +781,9 @@ command=bash -c "/opt/drec/client -l -v INFO -s 1 -S 60 $(grep -v '^#' /storage/
 
 ### Other software process configuration
 
-Supervisord can be used to configure process for any cmd based software. If drec software doesn't support some functionality or communication protocol but some other cmd based software does than it's possible to configure process to download disturbance records. Example bellow is for lftp application.
+Supervisor can be used to configure process for any cmd based software. If drec software doesn't support some functionality or communication protocol but some other cmd based software does than it's possible to configure process to download disturbance records. Example bellow is for lftp application.
 
-***Supervisord process configuration file***
+***Supervisor process configuration file***
 
 ```
 [program:lftp_SS_110_20_kV_substation_name]
