@@ -98,7 +98,7 @@ args = parser.parse_args()
 
 # Initialize IEC 61850 client
 client = iec61850.IEC61850_client()
-client.set_request_timeout(args.timeout)
+client.set_request_timeout(int(args.timeout))
 
 # Connect to IED
 try:
