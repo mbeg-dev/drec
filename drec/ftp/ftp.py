@@ -80,15 +80,15 @@ class FTPClient(ftplib.FTP):
         https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         """
         
-        # Remove .tmp directory
-        local_tmp_dirname = os.path.join(local_dirname, '.tmp')
-        if os.path.isdir(local_tmp_dirname):
-            shutil.rmtree(local_tmp_dirname)
-        
         # Download counter for poll timeout
         download_count = 0
         
         for attempt in range(no_retry + 1):
+            # Remove .tmp directory
+            local_tmp_dirname = os.path.join(local_dirname, '.tmp')
+            if os.path.isdir(local_tmp_dirname):
+                shutil.rmtree(local_tmp_dirname)
+            
             try:
                 # Check interrupt flag and exit if necesary
                 if self._interrupt.is_set(): break
@@ -141,11 +141,11 @@ class FTPClient(ftplib.FTP):
                             break
                     
                     if download and not self._interrupt.is_set():
+                        # Create .tmp dir if it doesn't exist
+                        os.makedirs(local_tmp_dirname, mode=0o700, exist_ok=True)
+                        
                         # Loop through files and download them
                         for dev_path, dev_size, dev_timestamp in dist_rec:
-                            # Create .tmp dir if it doesn't exist
-                            os.makedirs(local_tmp_dirname, mode=0o700, exist_ok=True)
-                            
                             # Extract basename and dirname from path
                             dev_basename = os.path.basename(dev_path)
                             dev_dirname = os.path.dirname(dev_path)
